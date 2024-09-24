@@ -15,7 +15,7 @@ end)
 
 Citizen.CreateThread(function()
     while true do
-        Wait(1000) -- Reduce the frequency of checks to every second
+        Wait(500) -- Reduce the frequency of checks to every half second
         
         playerPed = PlayerPedId()
         
@@ -30,14 +30,6 @@ Citizen.CreateThread(function()
             if health and health > 0 then
                 -- Normalize health to a percentage with 200 as the maximum
                 local normalizedHealth = (health / maxHealth) * 100
-                
-                -- Draw HUD if enabled
-                if Config.ShowDebugHUD then
-                    DrawTextOnScreen("Health: " .. math.floor(normalizedHealth) .. "%", 0.05, 0.05)
-                    DrawTextOnScreen("Stamina: " .. stamina .. "%", 0.05, 0.08)
-                    DrawTextOnScreen("Hunger: " .. hunger .. "%", 0.05, 0.11)
-                    DrawTextOnScreen("Thirst: " .. thirst .. "%", 0.05, 0.14)
-                end
                 
                 -- Health Effects
                 HandleHealthEffects(normalizedHealth, health)
@@ -55,6 +47,26 @@ Citizen.CreateThread(function()
             end
         else
             print("Invalid playerPed value")
+        end
+    end
+end)
+
+Citizen.CreateThread(function()
+    while true do
+        Wait(0) -- Draw the HUD every frame
+        
+        -- Draw HUD if enabled
+        if Config.ShowDebugHUD then
+            local health = GetEntityHealth(playerPed)
+            local maxHealth = 200 -- Set the maximum health to 200 for display purposes
+            local normalizedHealth = (health / maxHealth) * 100
+            local hunger = GetPlayerHunger()
+            local thirst = GetPlayerThirst()
+            
+            DrawTextOnScreen("Health: " .. math.floor(normalizedHealth) .. "%", 0.05, 0.05)
+            DrawTextOnScreen("Stamina: " .. stamina .. "%", 0.05, 0.08)
+            DrawTextOnScreen("Hunger: " .. hunger .. "%", 0.05, 0.11)
+            DrawTextOnScreen("Thirst: " .. thirst .. "%", 0.05, 0.14)
         end
     end
 end)
@@ -158,6 +170,20 @@ function HandleStaminaMechanics()
             action = 'playSound',
             sound = 'heavyBreathing'
         })
+        -- Change running animation
+        if not isExhausted then
+            RequestAnimSet("move_m@drunk@verydrunk")
+            while not HasAnimSetLoaded("move_m@drunk@verydrunk") do
+                Citizen.Wait(0)
+            end
+            SetPedMovementClipset(playerPed, "move_m@drunk@verydrunk", 1.0)
+            isExhausted = true
+        end
+    else
+        if isExhausted then
+            ResetPedMovementClipset(playerPed, 1.0)
+            isExhausted = false
+        end
     end
     
     if stamina == 0 then

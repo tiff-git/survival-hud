@@ -18,13 +18,13 @@ server_scripts {
     'server/*.lua'
 }
 
-ui_page 'sounds/index.html'
+ui_page 'html/index.html'
 
 files {
-    'sounds/index.html',
-    'sounds/heartbeat.ogg',
-    'sounds/hunger.ogg',
-    'sounds/thirst.ogg'
+    'html/index.html',
+    'html/heartbeat.ogg',
+    'html/hunger.ogg',
+    'html/thirst.ogg'
 }
 
 dependencies {
