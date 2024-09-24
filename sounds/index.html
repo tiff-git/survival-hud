@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Player</title>
+</head>
+<body>
+    <audio id="heartbeat" src="heartbeat.ogg"></audio>
+    <audio id="hunger" src="hunger.ogg"></audio>
+    <audio id="thirst" src="thirst.ogg"></audio>
+    <script>
+        window.addEventListener('message', function(event) {
+            if (event.data.action === 'playSound') {
+                const sound = document.getElementById(event.data.sound);
+                if (sound) {
+                    sound.play();
+                } else {
+                    console.error(`Sound element with id ${event.data.sound} not found`);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
