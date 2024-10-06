@@ -26,4 +26,4 @@ Config.SoundEffects = {
     HeavyBreathing = 'heavy_breathing.ogg'
 }
 
-Config.ShowDebugHUD = false -- Toggle this to show/hide the debug HUD
+Config.ShowDebugHUD = true -- Toggle this to show/hide the debug HUD

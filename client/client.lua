@@ -5,6 +5,8 @@ local criticalHealthNotified = false
 local playerPed = PlayerPedId()
 local stamina = Config.Stamina.Max
 local isExhausted = false
+local lastHungerNotification = 100
+local lastThirstNotification = 100
 
 Citizen.CreateThread(function()
     while true do
@@ -113,38 +115,44 @@ end
 
 function HandleHungerEffects(hunger)
     if hunger < Config.HungerThresholds.Low then
-        lib.notify({
-            title = 'Hunger Warning',
-            description = 'You are hungry!',
-            type = 'warning',
-            duration = 3000,
-            position = 'top-right'
-        })
-        -- Play hunger sound
-        SendNUIMessage({
-            action = 'playSound',
-            sound = 'hunger'
-        })
-        -- Apply slowdowns and decreased strength
+        if hunger <= lastHungerNotification - 5 or lastHungerNotification == 100 then
+            lib.notify({
+                title = 'Hunger Warning',
+                description = 'You are hungry!',
+                type = 'warning',
+                duration = 3000,
+                position = 'top-right'
+            })
+            -- Play hunger sound
+            SendNUIMessage({
+                action = 'playSound',
+                sound = 'hunger'
+            })
+            -- Apply slowdowns and decreased strength
+            lastHungerNotification = hunger
+        end
     end
 end
 
 function HandleThirstEffects(thirst)
     if thirst < Config.ThirstThresholds.Low then
-        lib.notify({
-            title = 'Thirst Warning',
-            description = 'You are thirsty!',
-            type = 'warning',
-            duration = 3000,
-            position = 'top-right'
-        })
-        -- Play thirst sound
-        SendNUIMessage({
-            action = 'playSound',
-            sound = 'thirst'
-        })
-        -- Apply blurry vision and slow health drain
-        SetTimecycleModifier("BarryFadeOut")
+        if thirst <= lastThirstNotification - 5 or lastThirstNotification == 100 then
+            lib.notify({
+                title = 'Thirst Warning',
+                description = 'You are thirsty!',
+                type = 'warning',
+                duration = 3000,
+                position = 'top-right'
+            })
+            -- Play thirst sound
+            SendNUIMessage({
+                action = 'playSound',
+                sound = 'thirst'
+            })
+            -- Apply blurry vision and slow health drain
+            SetTimecycleModifier("BarryFadeOut")
+            lastThirstNotification = thirst
+        end
     else
         ClearTimecycleModifier()
     end
