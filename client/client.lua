@@ -1,4 +1,3 @@
----@diagnostic disable: unused-local
 local QBCore = exports['qb-core']:GetCoreObject()
 local healthNotified = false
 local criticalHealthNotified = false
@@ -7,6 +6,7 @@ local stamina = Config.Stamina.Max
 local isExhausted = false
 local lastHungerNotification = 100
 local lastThirstNotification = 100
+local hudVisible = false
 
 Citizen.CreateThread(function()
     while true do
@@ -44,31 +44,35 @@ Citizen.CreateThread(function()
                 
                 -- Stamina Mechanics
                 HandleStaminaMechanics()
-            else
-                print("Invalid health value")
-            end
-        else
-            print("Invalid playerPed value")
-        end
-    end
-end)
+                
+                -- Update HUD
+                local hudText = string.format("Health: %d%%\nStamina: %d%%\nHunger: %d%%\nThirst: %d%%", 
+                math.floor(normalizedHealth), math.floor(stamina), math.floor(hunger), math.floor(thirst))
 
-Citizen.CreateThread(function()
-    while true do
-        Wait(0) -- Draw the HUD every frame
-        
-        -- Draw HUD if enabled
-        if Config.ShowDebugHUD then
-            local health = GetEntityHealth(playerPed)
-            local maxHealth = 200 -- Set the maximum health to 200 for display purposes
-            local normalizedHealth = (health / maxHealth) * 100
-            local hunger = GetPlayerHunger()
-            local thirst = GetPlayerThirst()
-            
-            DrawTextOnScreen("Health: " .. math.floor(normalizedHealth) .. "%", 0.05, 0.05)
-            DrawTextOnScreen("Stamina: " .. stamina .. "%", 0.05, 0.08)
-            DrawTextOnScreen("Hunger: " .. hunger .. "%", 0.05, 0.11)
-            DrawTextOnScreen("Thirst: " .. thirst .. "%", 0.05, 0.14)
+                local hudOptions = {
+                    position = 'top-center',
+                    style = {
+                        borderRadius = '10px',
+                        backgroundColor = '#333',
+                        color = '#fff',
+                        padding = '10px',
+                        fontSize = '14px',
+                        textAlign = 'center',
+                        opacity = 0.6
+                    }
+                }
+
+                if not hudVisible then
+                    lib.showTextUI(hudText, hudOptions)
+                    hudVisible = true
+                else
+                    -- Update the HUD text
+                    local isOpen, currentText = lib.isTextUIOpen()
+                    if isOpen and currentText ~= hudText then
+                        lib.showTextUI(hudText, hudOptions)
+                    end
+                end
+            end
         end
     end
 end)
@@ -200,19 +204,6 @@ function HandleStaminaMechanics()
     else
         isExhausted = false
     end
-end
-
-function DrawTextOnScreen(text, x, y)
-    SetTextFont(7) -- Changed font to Pricedown
-    SetTextProportional(1)
-    SetTextScale(0.4, 0.4)
-    SetTextColour(255, 255, 255, 255)
-    SetTextDropShadow(1, 0, 0, 0, 255)
-    SetTextEdge(1, 0, 0, 0, 255)
-    SetTextOutline()
-    SetTextEntry("STRING")
-    AddTextComponentString(text)
-    DrawText(x, y)
 end
 
 function GetPlayerStamina()
